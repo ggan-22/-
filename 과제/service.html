@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CINEVERSE — 영화 탐색</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="service.css" />
+  <script src="service.js" defer></script>
+</head>
+<body>
+  
+<!-- NAV -->
+<nav>
+  <div class="logo">CINEVERSE</div>
+  <ul class="nav-links">
+    <li><a href="#">메인</a></li>
+    <li><a href="about.html">소개</a></li>
+    <li><a href="#" class="active">서비스</a></li>
+    <li><a href="contact.html">FAQ</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Movie Service</p>
+    <h1 class="hero-title">당신이 찾는<br><span>모든 영화</span></h1>
+    <p class="hero-sub">원하는 영화를 찾아보세요!</p>
+  </div>
+</section>
+
+<!-- CONTROLS -->
+<div class="controls">
+  <div class="controls-inner">
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="영화 제목 검색 " autocomplete="off" />
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+    </div>
+
+    <div class="filters" id="filters">
+      <button class="filter-btn active" data-genre="all">전체</button>
+      <button class="filter-btn" data-genre="action">액션</button>
+      <button class="filter-btn" data-genre="romance">로맨스 / 멜로 </button>
+      <button class="filter-btn" data-genre="drama">드라마</button>
+      <button class="filter-btn" data-genre="comedy">코미디</button>
+      <button class="filter-btn" data-genre="war">전쟁</button>
+      <button class="filter-btn" data-genre="horror">호러</button>
+      <button class="filter-btn" data-genre="animation">애니메이션</button>
+    </div>
+
+    <select class="sort-select" id="sortSelect">
+      <option value="default">기본 정렬</option>
+      <option value="rating-desc">평점 높은순</option>
+      <option value="rating-asc">평점 낮은순</option>
+      <option value="year-desc">최신순</option>
+      <option value="year-asc">오래된순</option>
+      <option value="title-asc">제목 가나다순</option>
+    </select>
+
+    <div class="result-info"><span id="shownCount">0</span> / <span id="totalCount">0</span> 편</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main>
+  <div class="movie-grid" id="movieGrid">
+    <div class="no-results" id="noResults">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        <path d="M8 11h6M11 8v6"/>
+      </svg>
+      <h3>검색 결과가 없습니다</h3>
+      <p>다른 키워드나 장르를 선택해 보세요.</p>
+    </div>
+  </div>
+
+  <div class="load-more-wrap" id="loadMoreWrap">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <p class="progress-label" id="progressLabel"></p>
+    <button id="loadMoreBtn">더 보기</button>
+  </div>
+</main>
+
+<!-- MODAL -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="modal">
+    <button class="modal-close" id="modalClose">✕</button>
+    <div class="modal-top">
+      <div class="modal-poster"><img id="modalImg" src="" alt="" /></div>
+      <div class="modal-body">
+        <p class="modal-genre" id="modalGenre"></p>
+        <h2 class="modal-title" id="modalTitle"></h2>
+        <p class="modal-meta" id="modalMeta"></p>
+        <p class="modal-rating" id="modalRating"></p>
+        <p class="modal-stars" id="modalStars"></p>
+        <p class="modal-desc" id="modalDesc"></p>
+      </div>
+    </div>
+    <div class="modal-similar" id="modalSimilar">
+      <p class="similar-label">비슷한 영화</p>
+      <div class="similar-scroll" id="similarScroll"></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
