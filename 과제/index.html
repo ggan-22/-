@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOVIE WORLD | Movie Project</title>
+    <style>
+        /* [기본 설정] */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            background-color: #0a192f;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        /* [헤더] */
+        header {
+            background-color: #112240;
+            padding: 1rem 5%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-bottom: 2px solid #ffca28;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        @media (min-width: 768px) { header { flex-direction: row; justify-content: space-between; } }
+
+        header h1 { color: #ffca28; font-size: 1.5rem; cursor: pointer; letter-spacing: 2px; margin-bottom: 15px; }
+        @media (min-width: 768px) { header h1 { margin-bottom: 0; } }
+
+        nav ul { display: flex; list-style: none; gap: 20px; }
+        .nav-link { text-decoration: none; color: #ccd6f6; font-size: 1.1rem; font-weight: bold; }
+
+        /* [히어로 섹션] */
+        .hero {
+            height: 200px; background-color: #000; position: relative;
+            overflow: hidden; display: flex; justify-content: center; align-items: center;
+        }
+        @media (min-width: 768px) { .hero { height: 300px; } }
+        .hero video { width: 100%; height: 100%; object-fit: cover; opacity: 0.3; }
+        .hero-text { position: absolute; text-align: center; z-index: 10; }
+        .hero-text h2 { font-size: 1.8rem; color: #ffca28; margin-bottom: 5px; }
+        .hero-text p { font-size: 1rem; color: #ccd6f6; }
+
+        /* [필터 바] */
+        .filter-bar { text-align: center; padding: 25px 10px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+        .filter-btn {
+            padding: 8px 18px; background: transparent; border: 2px solid #ffca28;
+            color: #ffca28; cursor: pointer; border-radius: 25px; font-size: 0.9rem; font-weight: bold; transition: 0.3s;
+        }
+        .filter-btn.active, .filter-btn:hover { background: #ffca28; color: #0a192f; }
+
+        /* [영화 카드 메인 컨테이너 - 한 박스 안에 담기] */
+        .movie-wrap {
+            max-width: 1300px; /* 전체 박스의 최대 너비 제한 */
+            margin: 0 auto;    /* 중앙 정렬 */
+            padding: 0 20px 80px;
+        }
+
+        .movie-container {
+            display: grid;
+            /* 화면 너비에 따라 카드가 자동으로 꽉 차게 배치됨 */
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+        }
+
+        /* 내부의 movie-info 박스가 무조건 끝까지 늘어나도록 내부 레이아웃 구조 수정 */
+        .movie-card {
+            background-color: #112240; border-radius: 12px; overflow: hidden;
+            border: 1px solid #233554; display: grid; grid-template-rows: auto 1fr; transition: transform 0.3s;
+        }
+        .movie-card:hover { transform: translateY(-10px); }
+        .movie-card.hidden { display: none; }
+
+        .poster-box { width: 100%; aspect-ratio: 2 / 3; background-color: #233554; }
+        .poster-box img { width: 100%; height: 100%; object-fit: cover; }
+
+        .movie-info { padding: 18px; flex-grow: 1; display: flex; flex-direction: column; }
+        .genre-tag { color: #64ffda; font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; }
+        .movie-info h3 { font-size: 1.1rem; color: #ffffff; margin-bottom: 5px; }
+        .rating { color: #ffca28; font-size: 0.9rem; margin-bottom: 10px; }
+        .movie-info p { color: #8892b0; font-size: 0.85rem; line-height: 1.4; margin-top: auto; }
+
+        footer { text-align: center; padding: 40px; background-color: #020c1b; color: #8892b0; font-size: 0.8rem; border-top: 1px solid #233554; }
+
+        /* ===================================================
+           [추가된 팝업창 CSS]
+        =================================================== */
+        .popup-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(2, 12, 27, 0.7); z-index: 9999;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .popup-overlay.show { opacity: 1; pointer-events: auto; }
+        
+        .popup-box {
+            background-color: #112240; border: 2px solid #ffca28; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: fixed; 
+            top: 20px; 
+            left: 20px; 
+            width: 450px; 
+            padding: 25px;
+            text-align: center;
+        }
+        .popup-header { margin-bottom: 15px; }
+        .popup-date { font-size: 1.1rem; color: #8892b0; font-weight: bold; }
+        .popup-title { font-size: 1.8rem; color: #ffca28; font-weight: bold; margin-bottom: 20px; }
+        
+        .popup-body .pop-poster {
+            width: 300px; aspect-ratio: 2 / 3; margin: 0 auto 15px;
+            border-radius: 8px; overflow: hidden; border: 1px solid #233554;
+        }
+        .popup-body .pop-poster img { width: 100%; height: 100%; object-fit: cover; }
+        .popup-body .pop-movie-title { font-size: 1.6rem; color: #ffffff; font-weight: bold; margin-bottom: 30px; }
+        
+        .popup-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            border-top: 1px solid #233554; padding-top: 15px;
+        }
+        .popup-close-day {
+            background: none; border: none; color: #8892b0; font-size: 1rem;
+            cursor: pointer; font-weight: bold; transition: 0.2s;
+        }
+        .popup-close-day:hover { color: #ffffff; }
+        .popup-close-x {
+            background: #ffca28; border: none; color: #0a192f; padding: 6px 18px;
+            font-size: 1.1rem; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.2s;
+        }
+        .popup-close-x:hover { background: #ffffff; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 onclick="location.href='index.html'; window.location.reload();">MOVIE WORLD</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html" class="nav-link" style="color:#ffca28;">메인</a></li>
+                <li><a href="about.html" class="nav-link">소개</a></li>
+                <li><a href="service.html" class="nav-link">서비스</a></li>
+                <li><a href="contact.html" class="nav-link">FAQ</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <video autoplay muted loop playsinline><source src="영화 추천 배경2.mp4" type="video/mp4"></video>
+        <div class="hero-text">
+            <h2>당신을 위한 장르별 영화 추천</h2>
+            <p>Team 4조가 엄선한 최고의 영화 컬렉션</p>
+        </div>
+    </section>
+
+    <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterMovies('all', this)">전체보기</button>
+        <button class="filter-btn" onclick="filterMovies('action', this)">액션</button>
+        <button class="filter-btn" onclick="filterMovies('romance', this)">로맨스 / 멜로</button>
+        <button class="filter-btn" onclick="filterMovies('drama', this)">드라마</button>
+        <button class="filter-btn" onclick="filterMovies('comedy', this)">코미디</button>
+        <button class="filter-btn" onclick="filterMovies('war', this)">전쟁</button>
+        <button class="filter-btn" onclick="filterMovies('horror', this)">호러</button>
+        <button class="filter-btn" onclick="filterMovies('animation', this)">애니메이션</button>
+    </div>
+
+    <div class="movie-wrap">
+        <main class="movie-container">
+            <article class="movie-card romance">
+                <div class="poster-box"><img src="유열의음악앨범포스터.jpeg" alt="유열의 음악앨범"></div>
+                <div class="movie-info">
+                    <span class="genre-tag">멜로, 로맨스</span>
+                    <h3>유열의 음악앨범</h3>
+                    <div class="rating">★ 8.41</div>
+                    <p>라디오에서 흘러나온 노래처럼 우연히 만난 사랑.</p>
+                </div>
+            </article>
+            <article class="movie-card comedy">
+                <div class="poster-box"><img src="어바웃타임포스터.jpeg" alt="어바웃 타임"></div>
+                <div class="movie-info">
+                    <span class="genre-tag">코미디, 로맨스</span>
+                    <h3>어바웃 타임</h3>
+                    <div class="rating">★ 9.30</div>
+                    <p>매 순간의 소중함을 깨닫게 하는 시간 여행.</p>
+                </div>
+            </article>
+            <article class="movie-card romance">
+                <div class="poster-box"><img src="말할수없는비밀포스터.jpeg" alt="말할 수 없는 비밀"></div>
+                <div class="movie-info">
+                    <span class="genre-tag">멜로, 로맨스</span>
+                    <h3>말할 수 없는 비밀</h3>
+                    <div class="rating">★ 9.28</div>
+                    <p>피아노 선율을 타고 시간을 넘어온 애틋한 첫사랑.</p>
+                </div>
+            </article>
+            <article class="movie-card romance">
+                <div class="poster-box"><img src="너의결혼식포스터.jpeg" alt="너의 결혼식"></div>
+                <div class="movie-info">
+                    <span class="genre-tag">멜로, 로맨스</span>
+                    <h3>너의 결혼식</h3>
+                    <div class="rating">★ 9.01</div>
+                    <p>다사다난한 두 남녀의 첫사랑 연대기.</p>
+                </div>
+            </article>
+
+            <article class="movie-card action">
+                <div class="poster-box"><img src="올드가드1포스터.jpeg" alt="올드 가드"></div>
+                <div class="movie-info">
+                    <span class="genre-tag">액션, 판타지</span>
+                    <h3>올드 가드</h3>
+                    <div class="rating">★ 8.20</div>
+                    <p>수 세기 동안 세상을 지켜온 불사신들의 전투.</p>
+                </div>
+            </article>
+            <article class="movie-card action">
+                <div class="poster-box"><img src="탑건매버릭포스터.jpeg" alt="탑건"></div>
+                <div class="movie-info">
+                    <span class="genre-tag">액션</span>
+                    <h3>탑건: 매버릭</h3>
+                    <div class="rating">★ 9.77</div>
+                    <p>전설적인 파일럿의 귀환과 압도적 비행.</p>
+                </div>
+            </article>
+            <article class="movie-card action">
+                <div class="poster-box"><img src="어벤져스인피니트워포스터.jpeg" alt="인피니티워"></div>
+                <div class="movie-info">
+                    <span class="genre-tag">액션, SF</span>
+                    <h3>인피니티 워</h3>
+                    <div class="rating">★ 9.08</div>
+                    <p>우주의 운명을 건 최강의 빌런 타노스와의 대결.</p>
+                </div>
+            </article>
+            <article class="movie-card action">
+                <div class="poster-box"><img src="어벤져스엔드게임포스터.jpeg" alt="엔드게임"></div>
+                <div class="movie-info">
+                    <span class="genre-tag">액션, SF</span>
+                    <h3>엔드게임</h3>
+                    <div class="rating">★ 9.50</div>
+                    <p>모든 영웅이 하나 되어 펼치는 마지막 전쟁.</p>
+                </div>
+            </article>
+            <article class="movie-card action">
+                <div class="poster-box"><img src="스파이더맨노웨이홈포스터.jpeg" alt="노웨이홈"></div>
+                <div class="movie-info">
+                    <span class="genre-tag">액션, SF</span>
+                    <h3>노 웨이 홈</h3>
+                    <div class="rating">★ 9.10</div>
+                    <p>역대 모든 스파이더맨의 세계관이 하나로.</p>
+                </div>
+            </article>
+            <article class="movie-card action">
+                <div class="poster-box"><img src="닥터스트레인지대혼돈의멀티버스포스터.jpeg" alt="닥터스트레인지"></div>
+                <div class="movie-info">
+                    <span class="genre-tag">액션, 판타지</span>
+                    <h3>대혼돈의 멀티버스</h3>
+                    <div class="rating">★ 7.80</div>
+                    <p>끝없는 우주와 차원을 넘나드는 환상적인 마법.</p>
+                </div>
+            </article>
+
+            <article class="movie-card drama">
+                <div class="poster-box"><img src="생일포스터.jpeg" alt="생일"></div>
+                <div class="movie-info">
+                    <span class="genre-tag">드라마</span>
+                    <h3>생일</h3>
+                    <div class="rating">★ 8.90</div>
+                    <p>남겨진 이들이 서로의 아픔을 보듬는 진심 어린 기억.</p>
+                </div>
+            </article>
+
+            <article class="movie-card war">
+                <div class="poster-box"><img src="줄무늬파자마를입은소년포스터.jpeg" alt="줄무늬 파자마"></div>
+                <div class="movie-info">
+                    <span class="genre-tag">전쟁, 드라마</span>
+                    <h3>줄무늬 파자마를...</h3>
+                    <div class="rating">★ 9.15</div>
+                    <p>비극적인 시대 속 두 소년의 순수한 우정.</p>
+                </div>
+            </article>
+            <article class="movie-card war">
+                <div class="poster-box"><img src="메리크리스마스포스터.jpeg" alt="메리 크리스마스"></div>
+                <div class="movie-info">
+                    <span class="genre-tag">전쟁, 드라마</span>
+                    <h3>메리 크리스마스</h3>
+                    <div class="rating">★ 8.85</div>
+                    <p>1차 세계대전 중 기적처럼 찾아온 휴전 실화.</p>
+                </div>
+            </article>
+
+            <article class="movie-card horror">
+                <div class="poster-box"><img src="파묘포스터.jpeg" alt="파묘"></div>
+                <div class="movie-info">
+                    <span class="genre-tag">호러, 오컬트</span>
+                    <h3>파묘</h3>
+                    <div class="rating">★ 8.25</div>
+                    <p>무덤을 파헤친 후 시작된 기이한 공포.</p>
+                </div>
+            </article>
+
+            <article class="movie-card animation">
+                <div class="poster-box"><img src="센과치히로의행방불명포스터.jpeg" alt="센과 치히로"></div>
+                <div class="movie-info">
+                    <span class="genre-tag">애니메이션</span>
+                    <h3>센과 치히로의 행방불명</h3>
+                    <div class="rating">★ 9.59</div>
+                    <p>신들의 세계로 빠져든 소녀의 신비로운 모험.</p>
+                </div>
+            </article>
+            <article class="movie-card animation">
+                <div class="poster-box"><img src="너의이름은포스터.png" alt="너의 이름은"></div>
+                <div class="movie-info">
+                    <span class="genre-tag">애니메이션</span>
+                    <h3>너의 이름은</h3>
+                    <div class="rating">★ 9.02</div>
+                    <p>몸이 뒤바뀐 소년과 소녀의 기적 같은 사랑.</p>
+                </div>
+            </article>
+            <article class="movie-card animation">
+                <div class="poster-box"><img src="하울의움직이는성포스터.jpeg" alt="하울"></div>
+                <div class="movie-info">
+                    <span class="genre-tag">애니메이션</span>
+                    <h3>하울의 움직이는 성</h3>
+                    <div class="rating">★ 9.35</div>
+                    <p>마법사 하울과 저주에 걸린 소녀의 이야기.</p>
+                </div>
+            </article>
+            <article class="movie-card animation">
+                <div class="poster-box"><img src="모노노케히메포스터.jpeg" alt="모노노케 히메"></div>
+                <div class="movie-info">
+                    <span class="genre-tag">애니메이션</span>
+                    <h3>모노노케 히메</h3>
+                    <div class="rating">★ 9.34</div>
+                    <p>대자연의 신들과 인간의 피할 수 없는 전쟁.</p>
+                </div>
+            </article>
+        </main>
+    </div>
+
+    <footer>
+        <p>&copy; MOIVE World | 메인 페이지 제작: 박가은(팀원A)</p>
+        <p>&copy; HTML5, CSS3, JavaScript 활용 웹표준 기술 기말 과제</p>
+    </footer>
+
+    <div id="moviePopup" class="popup-overlay">
+        <div class="popup-box">
+            <div class="popup-header">
+                <div id="popupDate" class="popup-date">0000년 00월 00일</div>
+            </div>
+            <div class="popup-title">🎬 오늘의 추천 영화</div>
+            <div class="popup-body">
+                <div class="pop-poster">
+                    <img id="popImg" src="" alt="추천 영화 포스터">
+                </div>
+                <div id="popTitle" class="pop-movie-title">영화 제목</div>
+            </div>
+            <div class="popup-footer">
+                <button class="popup-close-day" onclick="closePopupHideDay()">오늘 하루 안 보기</button>
+                <button class="popup-close-x" onclick="closePopup()">X</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function filterMovies(genre, btnElement) {
+            const cards = document.querySelectorAll('.movie-card');
+            const btns = document.querySelectorAll('.filter-btn');
+            btns.forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+
+            cards.forEach(card => {
+                if(genre === 'all' || card.classList.contains(genre)) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        /* [추가된 팝업창 자바스크립트] */
+        // 코드 내에 있는 전체 18개 영화 데이터 배열 리스트
+        const allMovies = [
+            { title: "유열의 음악앨범", img: "유열의음악앨범포스터.jpeg" },
+            { title: "어바웃 타임", img: "어바웃타임포스터.jpeg" },
+            { title: "말할 수 없는 비밀", img: "말할수없는비밀포스터.jpeg" },
+            { title: "너의 결혼식", img: "너의결혼식포스터.jpeg" },
+            { title: "올드 가드", img: "올드가드1포스터.jpeg" },
+            { title: "탑건: 매버릭", img: "탑건매버릭포스터.jpeg" },
+            { title: "인피니티 워", img: "어벤져스인피니트워포스터.jpeg" },
+            { title: "엔드게임", img: "어벤져스엔드게임포스터.jpeg" },
+            { title: "노 웨이 홈", img: "스파이더맨но웨이홈포스터.jpeg" },
+            { title: "대혼돈의 멀티버스", img: "닥터스트레인지대혼돈의멀티버스포스터.jpeg" },
+            { title: "생일", img: "생일포스터.jpeg" },
+            { title: "줄무늬 파자마를...", img: "줄무늬파자마를입은소년포스터.jpeg" },
+            { title: "메리 크리스마스", img: "메리크리스마스포스터.jpeg" },
+            { title: "파묘", img: "파묘포스터.jpeg" },
+            { title: "센과 치히로의 행방불명", img: "센과치히로의행방불명포스터.jpeg" },
+            { title: "너의 이름은", img: "너의이름은포스터.png" },
+            { title: "하울의 움직이는 성", img: "하울의움직이는성포스터.jpeg" },
+            { title: "모노노케 히메", img: "모노노케히메포스터.jpeg" }
+        ];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // 오늘 하루 안 보기 세션 체크
+            const hidePopupDate = localStorage.getItem('hideMoviePopupDate');
+            const todayStr = new Date().toDateString();
+            
+            if (hidePopupDate === todayStr) {
+                return; 
+            }
+
+            // 상단 오늘의 날짜 표기 구하기
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth() + 1;
+            const date = now.getDate();
+            document.getElementById('popupDate').innerText = `${year}년 ${month}월 ${date}일`;
+
+            // 전체 영화 중 완전 무작위(랜덤)로 한 편 선정
+            const selectedMovie = allMovies[Math.floor(Math.random() * allMovies.length)];
+
+            // 팝업 내용 주입
+            document.getElementById('popImg').src = selectedMovie.img;
+            document.getElementById('popImg').alt = selectedMovie.title; // <- 고친 부분    
+            document.getElementById('popTitle').innerText = selectedMovie.title;
+
+            // 팝업 오버레이 활성화
+            setTimeout(() => {
+                document.getElementById('moviePopup').classList.add('show');
+            }, 400); 
+        });
+
+        // X 버튼으로 단순히 팝업 닫기
+        function closePopup() {
+            document.getElementById('moviePopup').classList.remove('show');
+        }
+
+        // 오늘 하루 안 보기 닫기 버튼
+        function closePopupHideDay() {
+            const todayStr = new Date().toDateString();
+            localStorage.setItem('hideMoviePopupDate', todayStr);
+            closePopup();
+        }
+    </script>
+</body>
+</html>

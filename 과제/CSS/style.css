@@ -1,4 +1,3 @@
-/* RESET */
 * {
     margin: 0;
     padding: 0;
@@ -10,6 +9,10 @@ body {
     background: #041C32;
     color: #eaeaea;
     line-height: 1.6;
+}
+
+h2,h3{
+    color: #fc0;
 }
 
 /* HEADER */
@@ -65,7 +68,7 @@ nav .action {
 
 .hero h1 {
     font-size: 55px;
-    color: #fff;
+    color: #fc0;
     line-height: 1.2;
     margin-bottom: 20px;
 }
@@ -154,7 +157,7 @@ section {
 .feature-box p,
 .stat-box p,
 .mission p {
-    color: #fc0;
+    color: white;
 }
 
 /* MISSION */
@@ -200,7 +203,7 @@ section {
 
 .cards p {
     padding: 0 15px 20px;
-    color: #fff;
+    color: #fc0;
 }
 
 /* GENRE GRID */
@@ -276,23 +279,6 @@ footer {
     padding: 40px;
 }
 
-.footer-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 20px;
-}
-
-.footer-grid a {
-    display: block;
-    color: #cbd5e1;
-    margin-bottom: 6px;
-    text-decoration: none;
-}
-
-.footer-grid a:hover {
-    color: #fc0;
-}
-
 .footer-bottom {
     text-align: center;
     margin-top: 30px;
@@ -302,10 +288,7 @@ footer {
 /* RESPONSIVE */
 @media (max-width: 768px) {
 
-    .features,
-    .stats,
-    .cards,
-    .grid-4 {
+    .features,.stats,.cards,.grid-4 {
         grid-template-columns: repeat(2, 1fr);
     }
 
@@ -326,11 +309,7 @@ footer {
 
 @media (max-width: 480px) {
 
-    .features,
-    .stats,
-    .cards,
-    .grid-4,
-    .footer-grid {
+    .features,.stats,.cards,.grid-4,.footer-grid {
         grid-template-columns: 1fr;
     }
 
